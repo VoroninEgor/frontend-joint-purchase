@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание товара</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-5">
+
+<div class="container">
+    <h1 class="text-center text-primary mb-4">Создание товара</h1>
+
+    <form id="itemForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="name" class="form-label">Название:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+            <div class="invalid-feedback">Пожалуйста, укажите название товара.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Описание:</label>
+            <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+            <div class="invalid-feedback">Пожалуйста, добавьте описание товара.</div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="price" class="form-label">Цена:</label>
+                <input type="number" id="price" name="price" class="form-control" step="0.01" required>
+                <div class="invalid-feedback">Пожалуйста, укажите цену товара.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="type" class="form-label">Тип:</label>
+                <input type="text" id="type" name="type" class="form-control" required>
+                <div class="invalid-feedback">Пожалуйста, укажите тип товара.</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="images" class="form-label">Загрузить изображения:</label>
+            <input type="file" id="images" name="images" class="form-control" multiple required>
+            <small class="form-text text-muted">Вы можете выбрать несколько изображений.</small>
+            <div class="invalid-feedback">Пожалуйста, загрузите изображения товара.</div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Создать товар</button>
+            <button type="button" id="finishButton" class="btn btn-success">Завершить</button>
+        </div>
+    </form>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Функция получения параметра из URL
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // Получаем id закупки из URL
+    const purchaseId = getQueryParam('id');
+    console.log('ID закупки:', purchaseId);
+
+    // Валидация Bootstrap
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Обработчик для создания товара
+    document.getElementById('itemForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        formData.append("purchaseId", purchaseId);
+
+        fetch('http://127.0.0.1:8081/item', {
+            method: 'POST',
+            body: formData,
+            headers: {
+            'Authorization': `Bearer ${localStorage.getItem("token")}` // Добавляем токен в заголовки
+          }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Успех:', data);
+            alert('Товар успешно создан!');
+            document.getElementById('itemForm').reset();
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при создании товара.');
+        });
+    });
+
+    // Обработчик для завершения закупки
+    document.getElementById('finishButton').addEventListener('click', function() {
+        fetch('http://127.0.0.1:8081/purchase/publish/' + purchaseId, {
+            method: 'PUT',
+            headers: {
+            'Authorization': `Bearer ${localStorage.getItem("token")}` // Добавляем токен в заголовки
+          }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Завершение:', data);
+            window.location.href = '../index.html';
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при завершении.');
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сайт для совместных покупок</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <!-- Улучшенная шапка сайта -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-primary fixed-top">
+    <div class="container-fluid">
+      <!-- Логотип или название сайта -->
+      <a class="navbar-brand text-white" href="#">Сайт для совместных покупок</a>
+      <!-- Отображение статуса токена -->
+      <span id="auth-status" class="navbar-text text-white ms-auto"></span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="navbar-links">
+          <li class="nav-item">
+            <a href="admin/purchase_managment.html" class="nav-link text-white">Список закупок, которые я создал</a>
+          </li>
+          <li class="nav-item">
+            <a href="user/purchase_catalog.html" class="nav-link text-white">Каталог закупок</a>
+          </li>
+          <li class="nav-item">
+            <a href="user/orders_list.html" class="nav-link text-white">Каталог заказов</a>
+          </li>
+          <li class="nav-item">
+            <a href="registration.html" class="nav-link text-white">Зарегистрироваться</a>
+          </li>
+          <li class="nav-item">
+            <a href="authentication.html" class="nav-link text-white">Войти в аккаунт</a>
+          </li>
+          <!-- Ссылка для организатора будет добавляться динамически -->
+          <li class="nav-item" id="create-purchase-link" style="display: none;">
+            <a href="admin/purchase_creat.html" class="nav-link text-white">Создать закупку как организатор</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Основной контент -->
+  <div class="container mt-5 pt-5">
+    <div class="text-center mb-4">
+      <h3 class="text-primary">Добро пожаловать на сайт совместных покупок</h3>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Проверка наличия токена в localStorage
+    window.onload = function() {
+      const token = localStorage.getItem('token');
+      const authStatus = document.getElementById('auth-status');
+      
+      if (token && token.trim() !== '') {
+        authStatus.textContent = 'Ок';
+        
+        // Выполним запрос к серверу для проверки прав пользователя
+        fetch(`http://localhost:8082/user/${token}`, {
+          method: 'GET'
+        })
+        .then(response => response.json())  // Преобразуем ответ в JSON
+        .then(data => {
+          console.log("data: ", data)
+          // Проверяем поле authority в ответе
+          if (data && data.authority === 'ORGANIZER') {
+            // Показываем ссылку "Создать закупку как организатор"
+            document.getElementById('create-purchase-link').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Ошибка при запросе:', error);
+        });
+        
+      } else {
+        authStatus.textContent = 'НеОК';
+      }
+    };
+  </script>
+
+</body>
+</html>

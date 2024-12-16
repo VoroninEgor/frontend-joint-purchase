@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание закупки</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light py-5">
+
+<div class="container">
+    <h1 class="text-center text-primary mb-4">Создание закупки</h1>
+
+    <form id="purchaseForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="name" class="form-label">Название:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+            <div class="invalid-feedback">Пожалуйста, укажите название.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Описание:</label>
+            <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+            <div class="invalid-feedback">Пожалуйста, добавьте описание.</div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="moneyGoal" class="form-label">Целевая сумма:</label>
+                <input type="number" id="moneyGoal" name="moneyGoal" class="form-control" step="0.01" required>
+                <div class="invalid-feedback">Пожалуйста, укажите целевую сумму.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="organizationalFee" class="form-label">Организационный сбор:</label>
+                <input type="number" id="organizationalFee" name="organizationalFee" class="form-control" required>
+                <div class="invalid-feedback">Пожалуйста, укажите организационный сбор.</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="stopDate" class="form-label">Дата окончания:</label>
+            <input type="datetime-local" id="stopDate" name="stopDate" class="form-control">
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="deliveryMethod" class="form-label">Метод доставки:</label>
+                <input type="text" id="deliveryMethod" name="deliveryMethod" class="form-control" required>
+                <div class="invalid-feedback">Пожалуйста, укажите метод доставки.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="paymentMethod" class="form-label">Метод оплаты:</label>
+                <input type="text" id="paymentMethod" name="paymentMethod" class="form-control" required>
+                <div class="invalid-feedback">Пожалуйста, укажите метод оплаты.</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Загрузить изображение:</label>
+            <input type="file" id="image" name="image" class="form-control" required>
+            <div class="invalid-feedback">Пожалуйста, загрузите изображение.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Перейти к добавлению товаров закупки</button>
+    </form>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Bootstrap валидация
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    document.getElementById('purchaseForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('http://127.0.0.1:8081/purchase', {
+            method: 'POST',
+            body: formData,
+            headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}` // Добавляем токен в заголовки
+          }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Успех:', data);
+            window.location.href = 'item_create.html?id=' + data.id;
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при создании закупки.');
+        });
+    });
+</script>
+</body>
+</html>
